@@ -9,7 +9,6 @@ path = "src/lib.rs"
 
 [dependencies]
 bls = { git = "https://github.com/semiotic-ai/lighthouse.git", branch = "stable" }
-firehose-protos = { git = "https://github.com/semiotic-ai/veemon.git", branch = "joseph/back-172-remove-forrestrie-from-veemon" }
 firehose-rs = { git = "https://github.com/semiotic-ai/firehose-rs.git", branch = "main" }
 primitive-types = "0.12.2"
 prost = "0.13.1"

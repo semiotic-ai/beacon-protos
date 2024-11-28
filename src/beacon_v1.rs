@@ -4,7 +4,7 @@
 //! Firehose Beacon-related data structures and operations.
 //! See the protobuffer definitions section of the README for more information.
 //!
-use firehose_rs::{Response, SingleBlockResponse};
+use firehose_rs::{FromResponse, HasNumberOrSlot, Response, SingleBlockResponse};
 use primitive_types::{H256, U256};
 use prost::Message;
 use ssz_types::{length::Fixed, Bitfield, FixedVector};
@@ -536,5 +536,19 @@ impl TryFrom<Block> for BlockRoot {
     fn try_from(beacon_block: Block) -> Result<Self, Self::Error> {
         let lighthouse_beacon_block = BeaconBlock::<MainnetEthSpec>::try_from(beacon_block)?;
         Ok(Self(lighthouse_beacon_block.canonical_root()))
+    }
+}
+
+impl FromResponse for Block {
+    type Error = BeaconProtosError;
+
+    fn from_response(msg: Response) -> Result<Self, BeaconProtosError> {
+        Self::try_from(msg)
+    }
+}
+
+impl HasNumberOrSlot for Block {
+    fn number_or_slot(&self) -> u64 {
+        self.slot
     }
 }
