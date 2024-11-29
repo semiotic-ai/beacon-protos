@@ -18,7 +18,6 @@ serde = { version = "1.0.208", features = ["derive"] }
 ssz_types = "0.6"
 thiserror = "2.0.0"
 tonic = "0.12.0"
-tree_hash = "0.6.0"
 types = { git = "https://github.com/semiotic-ai/lighthouse.git", branch = "stable" }
 
 [build-dependencies]
