@@ -9,7 +9,7 @@ path = "src/lib.rs"
 
 [dependencies]
 bls = { git = "https://github.com/semiotic-ai/lighthouse.git", branch = "stable" }
-firehose-rs = { git = "https://github.com/semiotic-ai/firehose-rs.git", branch = "main" }
+firehose-rs = "0.1.0"
 primitive-types = "0.12.2"
 prost = "0.13.1"
 prost-wkt = "0.6.0"

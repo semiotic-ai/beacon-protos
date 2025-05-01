@@ -972,7 +972,8 @@ dependencies = [
 [[package]]
 name = "firehose-rs"
 version = "0.1.0"
-source = "git+https://github.com/semiotic-ai/firehose-rs.git?branch=main#f0bbe6a4ff15bbfb6d091ae12a3eadce33fdfd6a"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "51c26c3c02472bcb02b84c687ac04e550e7ff689c6d15a01d2a0329b4aba153c"
 dependencies = [
  "prost",
  "prost-build",
