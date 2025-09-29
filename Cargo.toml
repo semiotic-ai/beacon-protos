@@ -8,7 +8,7 @@ name = "beacon_protos"
 path = "src/lib.rs"
 
 [dependencies]
-bls = { git = "https://github.com/semiotic-ai/lighthouse.git", branch = "stable" }
+bls = { git = "https://github.com/sigp/lighthouse.git", branch = "stable" }
 firehose-rs = "0.3.0"
 prost = "0.14.1"
 prost-wkt = "0.7.0"
@@ -16,7 +16,7 @@ prost-wkt-types = "0.7.0"
 serde = { version = "1.0.228", features = ["derive"] }
 thiserror = "2.0.17"
 tonic = "0.14.2"
-types = { git = "https://github.com/semiotic-ai/lighthouse.git", branch = "stable" }
+types = { git = "https://github.com/sigp/lighthouse.git", branch = "stable" }
 
 [build-dependencies]
 prost-build = "0.14.1"

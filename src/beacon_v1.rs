@@ -167,7 +167,7 @@ impl<E: EthSpec> TryFrom<DenebExecutionPayload> for types::ExecutionPayloadDeneb
                 .ok_or(BeaconProtosError::BlockConversionError)?
                 .seconds as u64,
             extra_data: extra_data.into(),
-            base_fee_per_gas: Uint256::from_big_endian(base_fee_per_gas.as_slice()),
+            base_fee_per_gas: Uint256::from_be_slice(base_fee_per_gas.as_slice()),
             block_hash: ExecutionBlockHash(Hash256::from_slice(block_hash.as_slice())),
             transactions: transactions
                 .into_iter()
