@@ -15,9 +15,9 @@ fn main() {
     config.extern_path(".google.protobuf.Any", "::prost_wkt_types::Any");
     config.extern_path(".google.protobuf.Timestamp", "::prost_wkt_types::Timestamp");
 
-    tonic_build::configure()
+    tonic_prost_build::configure()
         .build_client(true)
         .file_descriptor_set_path(out_dir.join("descriptors.bin"))
-        .compile_protos_with_config(config, &["protos/type.proto"], &["protos/"])
+        .compile_with_config(config, &["protos/type.proto"], &["protos/"])
         .unwrap();
 }

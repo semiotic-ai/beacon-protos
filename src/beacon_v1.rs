@@ -5,12 +5,10 @@
 //! See the protobuffer definitions section of the README for more information.
 //!
 use firehose_rs::{FromResponse, HasNumberOrSlot, Response, SingleBlockResponse};
-use primitive_types::{H256, U256};
 use prost::Message;
-use ssz_types::{length::Fixed, Bitfield, FixedVector};
 use types::{
-    Address, BeaconBlock, BeaconBlockBodyDeneb, BitList, EthSpec, ExecutionBlockHash, Graffiti,
-    IndexedAttestationBase, MainnetEthSpec, GRAFFITI_BYTES_LEN,
+    Address, BeaconBlock, BeaconBlockBodyDeneb, BitList, BitVector, EthSpec, ExecutionBlockHash,
+    Graffiti, Hash256, IndexedAttestationBase, MainnetEthSpec, Uint256, GRAFFITI_BYTES_LEN,
 };
 
 use crate::BeaconProtosError;
@@ -54,7 +52,7 @@ impl TryFrom<AttestationData> for types::AttestationData {
         Ok(Self {
             slot: slot.into(),
             index: committee_index,
-            beacon_block_root: H256::from_slice(beacon_block_root.as_slice()),
+            beacon_block_root: Hash256::from_slice(beacon_block_root.as_slice()),
             source: source.ok_or(BeaconProtosError::CheckpointMissing)?.into(),
             target: target.ok_or(BeaconProtosError::CheckpointMissing)?.into(),
         })
@@ -93,9 +91,9 @@ impl From<BeaconBlockHeader> for types::BeaconBlockHeader {
         Self {
             slot: slot.into(),
             proposer_index,
-            parent_root: H256::from_slice(parent_root.as_slice()),
-            state_root: H256::from_slice(state_root.as_slice()),
-            body_root: H256::from_slice(body_root.as_slice()),
+            parent_root: Hash256::from_slice(parent_root.as_slice()),
+            state_root: Hash256::from_slice(state_root.as_slice()),
+            body_root: Hash256::from_slice(body_root.as_slice()),
         }
     }
 }
@@ -125,7 +123,7 @@ impl From<Checkpoint> for types::Checkpoint {
     fn from(Checkpoint { epoch, root }: Checkpoint) -> Self {
         Self {
             epoch: epoch.into(),
-            root: H256::from_slice(root.as_slice()),
+            root: Hash256::from_slice(root.as_slice()),
         }
     }
 }
@@ -155,12 +153,12 @@ impl<E: EthSpec> TryFrom<DenebExecutionPayload> for types::ExecutionPayloadDeneb
         }: DenebExecutionPayload,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
-            parent_hash: ExecutionBlockHash::from_root(H256::from_slice(parent_hash.as_slice())),
+            parent_hash: ExecutionBlockHash::from_root(Hash256::from_slice(parent_hash.as_slice())),
             fee_recipient: Address::from_slice(fee_recipient.as_slice()),
-            state_root: H256::from_slice(state_root.as_slice()),
-            receipts_root: H256::from_slice(receipts_root.as_slice()),
-            logs_bloom: FixedVector::from(logs_bloom),
-            prev_randao: H256::from_slice(prev_randao.as_slice()),
+            state_root: Hash256::from_slice(state_root.as_slice()),
+            receipts_root: Hash256::from_slice(receipts_root.as_slice()),
+            logs_bloom: logs_bloom.into(),
+            prev_randao: Hash256::from_slice(prev_randao.as_slice()),
             block_number,
             gas_limit,
             gas_used,
@@ -169,8 +167,8 @@ impl<E: EthSpec> TryFrom<DenebExecutionPayload> for types::ExecutionPayloadDeneb
                 .ok_or(BeaconProtosError::BlockConversionError)?
                 .seconds as u64,
             extra_data: extra_data.into(),
-            base_fee_per_gas: U256::from_big_endian(base_fee_per_gas.as_slice()),
-            block_hash: ExecutionBlockHash(H256::from_slice(block_hash.as_slice())),
+            base_fee_per_gas: Uint256::from_big_endian(base_fee_per_gas.as_slice()),
+            block_hash: ExecutionBlockHash(Hash256::from_slice(block_hash.as_slice())),
             transactions: transactions
                 .into_iter()
                 .map(Into::into)
@@ -194,8 +192,8 @@ impl TryFrom<Deposit> for types::Deposit {
         Ok(Self {
             proof: proof
                 .into_iter()
-                .map(|v| H256::from_slice(v.as_slice()))
-                .collect::<Vec<_>>()
+                .map(|v| Hash256::from_slice(v.as_slice()))
+                .collect::<Vec<Hash256>>()
                 .into(),
             data: data
                 .ok_or(BeaconProtosError::DepositDataMissing)?
@@ -218,7 +216,7 @@ impl TryFrom<DepositData> for types::DepositData {
         Ok(Self {
             pubkey: bls::generics::GenericPublicKeyBytes::deserialize(public_key.as_slice())
                 .map_err(|e| BeaconProtosError::Bls(format!("{:?}", e)))?,
-            withdrawal_credentials: H256::from_slice(withdrawal_credentials.as_slice()),
+            withdrawal_credentials: Hash256::from_slice(withdrawal_credentials.as_slice()),
             amount: gwei,
             signature: bls::generics::GenericSignatureBytes::deserialize(signature.as_slice())
                 .map_err(|e| BeaconProtosError::Bls(format!("{:?}", e)))?,
@@ -235,9 +233,9 @@ impl From<Eth1Data> for types::Eth1Data {
         }: Eth1Data,
     ) -> Self {
         Self {
-            deposit_root: H256::from_slice(deposit_root.as_slice()),
+            deposit_root: Hash256::from_slice(deposit_root.as_slice()),
             deposit_count,
-            block_hash: H256::from_slice(block_hash.as_slice()),
+            block_hash: Hash256::from_slice(block_hash.as_slice()),
         }
     }
 }
@@ -365,7 +363,7 @@ impl<E: EthSpec> TryFrom<SyncAggregate> for types::SyncAggregate<E> {
         }: SyncAggregate,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
-            sync_committee_bits: Bitfield::<Fixed<<E as EthSpec>::SyncCommitteeSize>>::from_bytes(
+            sync_committee_bits: BitVector::<E::SyncCommitteeSize>::from_bytes(
                 sync_commitee_bits.as_slice().into(),
             )
             .map_err(|e| BeaconProtosError::SszTypesError(format!("{:?}", e)))?,
@@ -519,8 +517,8 @@ impl TryFrom<Block> for types::BeaconBlock<MainnetEthSpec> {
         Ok(Self::Deneb(types::BeaconBlockDeneb {
             slot: slot.into(),
             proposer_index,
-            parent_root: H256::from_slice(parent_root.as_slice()),
-            state_root: H256::from_slice(state_root.as_slice()),
+            parent_root: Hash256::from_slice(parent_root.as_slice()),
+            state_root: Hash256::from_slice(state_root.as_slice()),
             body: body
                 .ok_or(BeaconProtosError::BlockConversionError)?
                 .try_into()?,
@@ -528,14 +526,16 @@ impl TryFrom<Block> for types::BeaconBlock<MainnetEthSpec> {
     }
 }
 
-pub struct BlockRoot(pub H256);
+pub struct BlockRoot(pub Hash256);
 
 impl TryFrom<Block> for BlockRoot {
     type Error = BeaconProtosError;
 
     fn try_from(beacon_block: Block) -> Result<Self, Self::Error> {
         let lighthouse_beacon_block = BeaconBlock::<MainnetEthSpec>::try_from(beacon_block)?;
-        Ok(Self(lighthouse_beacon_block.canonical_root()))
+        Ok(Self(Hash256::from_slice(
+            &lighthouse_beacon_block.canonical_root().0,
+        )))
     }
 }
 
